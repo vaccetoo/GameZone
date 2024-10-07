@@ -34,7 +34,7 @@ namespace GameZone.Services
 
         public async Task<IEnumerable<GameViewModel>> GetAllAsync()
         {
-            return  await _context.Games
+            return await _context.Games
                 .Select(entity => new GameViewModel()
                 {
                     Id = entity.Id,
@@ -43,6 +43,40 @@ namespace GameZone.Services
                     ReleasedOn = entity.ReleasedOn.ToString(DateTimeFormat),
                     Title = entity.Title,
                     Publisher = entity.Publisher.UserName
+                })
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<GameFormViewModel> GetByIdAsync(int id)
+        {
+            return await _context.Games
+                .Where(g => g.Id == id)
+                .Select(g => new GameFormViewModel()
+                {
+                    Id = g.Id,
+                    Description = g.Description,
+                    GenreId = g.GenreId,
+                    ImageUrl = g.ImageUrl,
+                    ReleasedOn = g.ReleasedOn.ToString(DateTimeFormat),
+                    Title = g.Title
+                })
+                .AsNoTracking()
+                .FirstAsync();
+        }
+
+        public async Task<IEnumerable<GameViewModel>> GetGamerGamesAsync(string userId)
+        {
+            return await _context.GamersGames
+                .Where(gg => gg.GamerId == userId)
+                .Select(gg => new GameViewModel()
+                {
+                    Id = gg.Game.Id,
+                    Genre = gg.Game.Genre.Name,
+                    ImageUrl = gg.Game.ImageUrl,
+                    Publisher = gg.Game.Publisher.UserName,
+                    ReleasedOn = gg.Game.ReleasedOn.ToString(DateTimeFormat),
+                    Title = gg.Game.Title
                 })
                 .AsNoTracking()
                 .ToListAsync();
@@ -60,5 +94,22 @@ namespace GameZone.Services
                 .ToListAsync();
         }
 
+        public async Task UpdateGameAsync(GameFormViewModel model, DateTime releasedDate)
+        {
+            var entity = await _context.Games
+                .FindAsync(model.Id);
+
+            if (entity != null)
+            {
+                entity.Description = model.Description;
+                entity.Title = model.Title;
+                entity.ReleasedOn = releasedDate;
+                entity.GenreId = model.GenreId;
+                entity.Id = model.Id;
+                entity.ImageUrl = model.ImageUrl;
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

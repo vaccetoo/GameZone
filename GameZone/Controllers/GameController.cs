@@ -67,6 +67,56 @@ namespace GameZone.Controllers
             return RedirectToAction(nameof(All));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> MyZone()
+        {
+            var model = await _gameService.GetGamerGamesAsync(GetUserId());
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            GameFormViewModel model = await _gameService.GetByIdAsync(id);
+
+            model.Genres = await _gameService.GetGenresAsync();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(GameFormViewModel model)
+        {
+            DateTime releasedDate = DateTime.Now;
+
+            if (!DateTime.TryParseExact(
+                model.ReleasedOn,
+                DateTimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out releasedDate))
+            {
+                ModelState.AddModelError(nameof(model.ReleasedOn), InvalidDateErrorMessage);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                model.Genres = await _gameService.GetGenresAsync();
+
+                return View(model);
+            }
+
+            await _gameService.UpdateGameAsync(model, releasedDate);
+
+            return RedirectToAction(nameof(All));
+        }
+
+        //[HttpPost]
+        //public async Task<IActionResult> AddToMyZone()
+        //{
+
+        //}
         private string GetUserId()
         {
             return _user.GetUserId(User);
