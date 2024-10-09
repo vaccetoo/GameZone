@@ -19,7 +19,6 @@ namespace GameZone.Services
         {
             var entity = new Game()
             {
-                Id = model.Id,
                 Description = model.Description,
                 GenreId = model.GenreId,
                 ImageUrl = model.ImageUrl,
@@ -30,6 +29,25 @@ namespace GameZone.Services
 
             await _context.Games.AddAsync(entity);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task AddGamerGame(int gameId, string userId)
+        {
+            var existingGamerGame = await _context.GamersGames
+            .FirstOrDefaultAsync(gg => gg.GameId == gameId && gg.GamerId == userId);
+
+            if (existingGamerGame == null)
+            {
+                var gamerGame = new GamerGame()
+                {
+                    GameId = gameId,
+                    GamerId = userId
+                };
+
+                await _context.GamersGames.AddAsync(gamerGame);
+                await _context.SaveChangesAsync();
+            }
+
         }
 
         public async Task<IEnumerable<GameViewModel>> GetAllAsync()
@@ -92,6 +110,18 @@ namespace GameZone.Services
                 })
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task RemoveGamerGame(int gameId, string userId)
+        {
+            var gamerGame = await _context.GamersGames
+                .FirstOrDefaultAsync(gg => gg.GamerId == userId && gg.GameId == gameId);
+
+            if (gamerGame != null)
+            {
+                _context.GamersGames.Remove(gamerGame);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task UpdateGameAsync(GameFormViewModel model, DateTime releasedDate)

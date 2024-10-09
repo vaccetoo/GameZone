@@ -3,10 +3,9 @@ using GameZone.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
 using System.Globalization;
-using static GameZone.Common.Constants.ValidationConstants;
 using static GameZone.Common.Constants.ErrorMessages;
+using static GameZone.Common.Constants.ValidationConstants;
 
 namespace GameZone.Controllers
 {
@@ -112,11 +111,21 @@ namespace GameZone.Controllers
             return RedirectToAction(nameof(All));
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> AddToMyZone()
-        //{
+        
+        public async Task<IActionResult> AddToMyZone(int id)
+        {
+            await _gameService.AddGamerGame(id, GetUserId());
 
-        //}
+            return RedirectToAction(nameof(MyZone));
+        }
+
+        public async Task<IActionResult> StrikeOut(int id)
+        {
+            await _gameService.RemoveGamerGame(id, GetUserId());
+
+            return RedirectToAction(nameof(MyZone));
+        }
+
         private string GetUserId()
         {
             return _user.GetUserId(User);
