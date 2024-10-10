@@ -31,7 +31,7 @@ namespace GameZone.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddGamerGame(int gameId, string userId)
+        public async Task AddGamerGameAsync(int gameId, string userId)
         {
             var existingGamerGame = await _context.GamersGames
             .FirstOrDefaultAsync(gg => gg.GameId == gameId && gg.GamerId == userId);
@@ -48,6 +48,18 @@ namespace GameZone.Services
                 await _context.SaveChangesAsync();
             }
 
+        }
+
+        public async Task DeleteGameAsync(DeleteGameViewModel model)
+        {
+            var entity = await _context.Games
+                .FirstOrDefaultAsync(g => g.Id == model.Id);
+
+            if (entity != null)
+            {
+                _context.Games.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<GameViewModel>> GetAllAsync()
@@ -83,6 +95,30 @@ namespace GameZone.Services
                 .FirstAsync();
         }
 
+        public async Task<GameDetailsViewModel> GetGameDetailsAsync(int id)
+        {
+            var entity = await _context.Games
+                .Include(g => g.Genre)
+                .Include(g => g.Publisher)
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
+            return new GameDetailsViewModel()
+            {
+                Id = entity.Id,
+                Description = entity.Description,
+                Genre = entity.Genre.Name,
+                ImageUrl = entity.ImageUrl,
+                Publisher = entity.Publisher.UserName,
+                ReleasedOn = entity.ReleasedOn.ToString(DateTimeFormat),
+                Title = entity.Title
+            };
+        }
+
         public async Task<IEnumerable<GameViewModel>> GetGamerGamesAsync(string userId)
         {
             return await _context.GamersGames
@@ -112,7 +148,7 @@ namespace GameZone.Services
                 .ToListAsync();
         }
 
-        public async Task RemoveGamerGame(int gameId, string userId)
+        public async Task RemoveGamerGameAsync(int gameId, string userId)
         {
             var gamerGame = await _context.GamersGames
                 .FirstOrDefaultAsync(gg => gg.GamerId == userId && gg.GameId == gameId);

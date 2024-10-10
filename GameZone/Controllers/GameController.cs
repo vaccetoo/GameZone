@@ -114,16 +114,40 @@ namespace GameZone.Controllers
         
         public async Task<IActionResult> AddToMyZone(int id)
         {
-            await _gameService.AddGamerGame(id, GetUserId());
+            await _gameService.AddGamerGameAsync(id, GetUserId());
 
             return RedirectToAction(nameof(MyZone));
         }
 
         public async Task<IActionResult> StrikeOut(int id)
         {
-            await _gameService.RemoveGamerGame(id, GetUserId());
+            await _gameService.RemoveGamerGameAsync(id, GetUserId());
 
             return RedirectToAction(nameof(MyZone));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var model = await _gameService.GetGameDetailsAsync(id);
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var model = new DeleteGameViewModel();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteConfirmed(DeleteGameViewModel model)
+        {
+            await _gameService.DeleteGameAsync(model);
+
+            return RedirectToAction(nameof(All));
         }
 
         private string GetUserId()

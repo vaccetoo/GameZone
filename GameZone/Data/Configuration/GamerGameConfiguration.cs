@@ -18,13 +18,13 @@ namespace GameZone.Data.Configuration
                 .HasOne(gg => gg.Game)
                 .WithMany(gamer => gamer.GamersGames)
                 .HasForeignKey(gg => gg.GameId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder
                 .HasOne(gg => gg.Gamer)
                 .WithMany()
                 .HasForeignKey(gg => gg.GamerId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
